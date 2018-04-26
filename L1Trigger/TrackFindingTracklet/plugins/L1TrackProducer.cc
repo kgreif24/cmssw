@@ -299,10 +299,11 @@ void L1TrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
   iSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
   iSetup.get<TrackerDigiGeometryRecord>().get(tGeomHandle);
 
+  eventnum++;
   SLHCEvent ev;
+  ev.setEventNum(eventnum);
   ev.setIPx(bsPosition.x());
   ev.setIPy(bsPosition.y());
-  eventnum++;
 
 
   ///////////////////
@@ -349,7 +350,10 @@ void L1TrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
     this_tp++;
 
     // only keep TPs producing a cluster
-    if (MCTruthTTClusterHandle->findTTClusterRefs(tp_ptr).size() < 1) continue;
+    if (MCTruthTTClusterHandle->findTTClusterRefs(tp_ptr).size() < 1) {
+      if (doMyDebug) std::cout << "TP didn't produce a cluster" << std::endl;
+      continue;
+    }
 
     if (iterTP->g4Tracks().size()==0) {
       if (doMyDebug) cout << "TP has no g4Track" << endl;

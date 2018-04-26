@@ -401,10 +401,11 @@ void L1FPGATrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSe
   iSetup.get<TrackerTopologyRcd>().get(tTopoHandle);
   iSetup.get<TrackerDigiGeometryRecord>().get(tGeomHandle);
 
+  eventnum++;
   SLHCEvent ev;
+  ev.setEventNum(eventnum);
   ev.setIPx(bsPosition.x());
   ev.setIPy(bsPosition.y());
-  eventnum++;
 
 
   ///////////////////
