@@ -102,6 +102,8 @@
 
 //#include "SLHCUpgradeSimulations/L1TrackTrigger/interface/StubPtConsistency.h"
 
+#include "L1Trigger/TrackFindingTracklet/interface/StubKiller.h"
+
 //////////////
 // STD HEADERS
 #include <memory>
@@ -425,6 +427,14 @@ void L1FPGATrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSe
   const TrackerTopology* const tTopo = tTopoHandle.product();
   const TrackerGeometry* const theTrackerGeom = tGeomHandle.product();
 
+  // ------------------------------------------------------------------------------------------
+  // check killing stubs for stress test
+  
+  StubKiller* my_stubkiller = new StubKiller();
+  my_stubkiller->initialise(1, tTopo, theTrackerGeom);
+  
+  // ------------------------------------------------------------------------------------------
+
 
   ////////////////////////
   // GET THE PRIMITIVES //
@@ -686,9 +696,23 @@ void L1FPGATrackProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSe
       	strip=irphi[0];
       }
 
+      // ------------------------------------------------------------------------------------------
+      // check killing stubs for stress test
+
+      const TTStub<Ref_Phase2TrackerDigi_> *mystub = &(*tempStubPtr);
+      bool killthis = my_stubkiller->killStub(mystub);
+
+      // ------------------------------------------------------------------------------------------
+
+
       if (tempStubPtr->getTriggerDisplacement() > 100.) {
 	if (doMyDebug) std::cout << "... if FE inefficiencies calculated, this stub is thrown out! " << endl;
       }
+      /*
+      else if (killthis) {
+	if (doMyDebug) std::cout << "killing this stub!" << std::endl;
+      }
+      */
       else {
 	if (doMyDebug) std::cout << "... add this stub to the event!" << std::endl;
 	if (ev.addStub(layer,ladder,module,strip,eventID,simtrackID,stub_pt,stub_bend,
