@@ -232,13 +232,14 @@ private:
 
   std::vector<int>*   m_allstub_genuine;
 
-  // "track jet variables" (for each gen jet, store the sum of pt of TPs / tracks inside jet cone)
+  // track jet variables (for each gen jet, store the sum of pt of TPs / tracks inside jet cone)
   std::vector<float>* m_jet_eta;
+  std::vector<float>* m_jet_phi;
   std::vector<float>* m_jet_pt;
   std::vector<float>* m_jet_tp_sumpt;
+  std::vector<float>* m_jet_trk_sumpt;
   std::vector<float>* m_jet_matchtrk_sumpt;
   std::vector<float>* m_jet_loosematchtrk_sumpt;
-  std::vector<float>* m_jet_trk_sumpt;
 
 };
 
@@ -267,27 +268,26 @@ L1TrackNtupleMaker::L1TrackNtupleMaker(edm::ParameterSet const& iConfig) :
   TP_maxZ0         = iConfig.getParameter< double >("TP_maxZ0");
   L1TrackInputTag      = iConfig.getParameter<edm::InputTag>("L1TrackInputTag");
   MCTruthTrackInputTag = iConfig.getParameter<edm::InputTag>("MCTruthTrackInputTag");
-  L1Tk_minNStub    = iConfig.getParameter< int >("L1Tk_minNStub");
+  L1Tk_minNStub        = iConfig.getParameter< int >("L1Tk_minNStub");
 
   TrackingInJets = iConfig.getParameter< bool >("TrackingInJets");
 
-  L1StubInputTag      = iConfig.getParameter<edm::InputTag>("L1StubInputTag");
-  MCTruthClusterInputTag = iConfig.getParameter<edm::InputTag>("MCTruthClusterInputTag");
-  MCTruthStubInputTag = iConfig.getParameter<edm::InputTag>("MCTruthStubInputTag");
+  L1StubInputTag           = iConfig.getParameter<edm::InputTag>("L1StubInputTag");
+  MCTruthClusterInputTag   = iConfig.getParameter<edm::InputTag>("MCTruthClusterInputTag");
+  MCTruthStubInputTag      = iConfig.getParameter<edm::InputTag>("MCTruthStubInputTag");
   TrackingParticleInputTag = iConfig.getParameter<edm::InputTag>("TrackingParticleInputTag");
-  TrackingVertexInputTag = iConfig.getParameter<edm::InputTag>("TrackingVertexInputTag");
-  GenJetInputTag = iConfig.getParameter<edm::InputTag>("GenJetInputTag");
+  TrackingVertexInputTag   = iConfig.getParameter<edm::InputTag>("TrackingVertexInputTag");
+  GenJetInputTag           = iConfig.getParameter<edm::InputTag>("GenJetInputTag");
 
-  ttTrackToken_ = consumes< std::vector< TTTrack< Ref_Phase2TrackerDigi_ > > >(L1TrackInputTag);
-  ttTrackMCTruthToken_ = consumes< TTTrackAssociationMap< Ref_Phase2TrackerDigi_ > >(MCTruthTrackInputTag);
-
-  ttStubToken_ = consumes< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > >(L1StubInputTag);
+  ttTrackToken_          = consumes< std::vector< TTTrack< Ref_Phase2TrackerDigi_ > > >(L1TrackInputTag);
+  ttTrackMCTruthToken_   = consumes< TTTrackAssociationMap< Ref_Phase2TrackerDigi_ > >(MCTruthTrackInputTag);
+  ttStubToken_           = consumes< edmNew::DetSetVector< TTStub< Ref_Phase2TrackerDigi_ > > >(L1StubInputTag);
   ttClusterMCTruthToken_ = consumes< TTClusterAssociationMap< Ref_Phase2TrackerDigi_ > >(MCTruthClusterInputTag);
-  ttStubMCTruthToken_ = consumes< TTStubAssociationMap< Ref_Phase2TrackerDigi_ > >(MCTruthStubInputTag);
+  ttStubMCTruthToken_    = consumes< TTStubAssociationMap< Ref_Phase2TrackerDigi_ > >(MCTruthStubInputTag);
 
   TrackingParticleToken_ = consumes< std::vector< TrackingParticle > >(TrackingParticleInputTag);
-  TrackingVertexToken_ = consumes< std::vector< TrackingVertex > >(TrackingVertexInputTag);
-  GenJetToken_ = consumes< std::vector< reco::GenJet > >(GenJetInputTag);
+  TrackingVertexToken_   = consumes< std::vector< TrackingVertex > >(TrackingVertexInputTag);
+  GenJetToken_           = consumes< std::vector< reco::GenJet > >(GenJetInputTag);
 
 }
 
@@ -327,35 +327,35 @@ void L1TrackNtupleMaker::beginJob()
   m_trk_d0    = new std::vector<float>;
   m_trk_chi2  = new std::vector<float>;
   m_trk_nstub = new std::vector<int>;
-  m_trk_genuine      = new std::vector<int>;
-  m_trk_loose        = new std::vector<int>;
-  m_trk_unknown      = new std::vector<int>;
-  m_trk_combinatoric = new std::vector<int>;
-  m_trk_fake = new std::vector<int>;
+  m_trk_genuine       = new std::vector<int>;
+  m_trk_loose         = new std::vector<int>;
+  m_trk_unknown       = new std::vector<int>;
+  m_trk_combinatoric  = new std::vector<int>;
+  m_trk_fake          = new std::vector<int>;
   m_trk_matchtp_pdgid = new std::vector<int>;
-  m_trk_matchtp_pt = new std::vector<float>;
-  m_trk_matchtp_eta = new std::vector<float>;
-  m_trk_matchtp_phi = new std::vector<float>;
-  m_trk_matchtp_z0 = new std::vector<float>;
-  m_trk_matchtp_dxy = new std::vector<float>;
-  m_trk_injet = new std::vector<int>;
-  m_trk_injet_highpt = new std::vector<int>;
+  m_trk_matchtp_pt    = new std::vector<float>;
+  m_trk_matchtp_eta   = new std::vector<float>;
+  m_trk_matchtp_phi   = new std::vector<float>;
+  m_trk_matchtp_z0    = new std::vector<float>;
+  m_trk_matchtp_dxy   = new std::vector<float>;
+  m_trk_injet         = new std::vector<int>;
+  m_trk_injet_highpt  = new std::vector<int>;
 
-  m_tp_pt     = new std::vector<float>;
-  m_tp_eta    = new std::vector<float>;
-  m_tp_phi    = new std::vector<float>;
-  m_tp_dxy    = new std::vector<float>;
-  m_tp_d0     = new std::vector<float>;
-  m_tp_z0     = new std::vector<float>;
+  m_tp_pt      = new std::vector<float>;
+  m_tp_eta     = new std::vector<float>;
+  m_tp_phi     = new std::vector<float>;
+  m_tp_dxy     = new std::vector<float>;
+  m_tp_d0      = new std::vector<float>;
+  m_tp_z0      = new std::vector<float>;
   m_tp_d0_prod = new std::vector<float>;
   m_tp_z0_prod = new std::vector<float>;
-  m_tp_pdgid  = new std::vector<int>;
-  m_tp_nmatch = new std::vector<int>;
-  m_tp_nloosematch = new std::vector<int>;
-  m_tp_nstub  = new std::vector<int>;
-  m_tp_eventid = new std::vector<int>;
-  m_tp_charge = new std::vector<int>;
-  m_tp_injet = new std::vector<int>;
+  m_tp_pdgid   = new std::vector<int>;
+  m_tp_nmatch  = new std::vector<int>;
+  m_tp_nloosematch  = new std::vector<int>;
+  m_tp_nstub        = new std::vector<int>;
+  m_tp_eventid      = new std::vector<int>;
+  m_tp_charge       = new std::vector<int>;
+  m_tp_injet        = new std::vector<int>;
   m_tp_injet_highpt = new std::vector<int>;
 
   m_matchtrk_pt    = new std::vector<float>;
@@ -384,7 +384,7 @@ void L1TrackNtupleMaker::beginJob()
 
   m_allstub_isBarrel = new std::vector<int>;
   m_allstub_layer    = new std::vector<int>;
-  m_allstub_isPSmodule = new std::vector<int>;
+  m_allstub_isPSmodule   = new std::vector<int>;
   m_allstub_trigDisplace = new std::vector<float>;
   m_allstub_trigOffset   = new std::vector<float>;
   m_allstub_trigPos      = new std::vector<float>;
@@ -398,11 +398,12 @@ void L1TrackNtupleMaker::beginJob()
   m_allstub_genuine = new std::vector<int>;
 
   m_jet_eta = new std::vector<float>;
-  m_jet_pt = new std::vector<float>;
-  m_jet_tp_sumpt = new std::vector<float>;
-  m_jet_matchtrk_sumpt = new std::vector<float>;
-  m_jet_loosematchtrk_sumpt = new std::vector<float>;
+  m_jet_phi = new std::vector<float>;
+  m_jet_pt  = new std::vector<float>;
+  m_jet_tp_sumpt  = new std::vector<float>;
   m_jet_trk_sumpt = new std::vector<float>;
+  m_jet_matchtrk_sumpt      = new std::vector<float>;
+  m_jet_loosematchtrk_sumpt = new std::vector<float>;
 
 
   // ntuple
@@ -421,7 +422,7 @@ void L1TrackNtupleMaker::beginJob()
     eventTree->Branch("trk_loose",        &m_trk_loose);
     eventTree->Branch("trk_unknown",      &m_trk_unknown);
     eventTree->Branch("trk_combinatoric", &m_trk_combinatoric);
-    eventTree->Branch("trk_fake", &m_trk_fake);
+    eventTree->Branch("trk_fake",         &m_trk_fake);
     eventTree->Branch("trk_matchtp_pdgid",&m_trk_matchtp_pdgid);
     eventTree->Branch("trk_matchtp_pt",   &m_trk_matchtp_pt);
     eventTree->Branch("trk_matchtp_eta",  &m_trk_matchtp_eta);
@@ -429,7 +430,7 @@ void L1TrackNtupleMaker::beginJob()
     eventTree->Branch("trk_matchtp_z0",   &m_trk_matchtp_z0);
     eventTree->Branch("trk_matchtp_dxy",  &m_trk_matchtp_dxy);
     if (TrackingInJets) {
-      eventTree->Branch("trk_injet", &m_trk_injet);
+      eventTree->Branch("trk_injet",        &m_trk_injet);
       eventTree->Branch("trk_injet_highpt", &m_trk_injet_highpt);
     }
   }
@@ -440,41 +441,41 @@ void L1TrackNtupleMaker::beginJob()
   eventTree->Branch("tp_dxy",    &m_tp_dxy);
   eventTree->Branch("tp_d0",     &m_tp_d0);
   eventTree->Branch("tp_z0",     &m_tp_z0);
-  eventTree->Branch("tp_d0_prod",&m_tp_d0_prod);
-  eventTree->Branch("tp_z0_prod",&m_tp_z0_prod);
-  eventTree->Branch("tp_pdgid",  &m_tp_pdgid);
-  eventTree->Branch("tp_nmatch", &m_tp_nmatch);
+  eventTree->Branch("tp_d0_prod",     &m_tp_d0_prod);
+  eventTree->Branch("tp_z0_prod",     &m_tp_z0_prod);
+  eventTree->Branch("tp_pdgid",       &m_tp_pdgid);
+  eventTree->Branch("tp_nmatch",      &m_tp_nmatch);
   eventTree->Branch("tp_nloosematch", &m_tp_nloosematch);
-  eventTree->Branch("tp_nstub", &m_tp_nstub);
-  eventTree->Branch("tp_eventid",&m_tp_eventid);
-  eventTree->Branch("tp_charge",&m_tp_charge);
+  eventTree->Branch("tp_nstub",       &m_tp_nstub);
+  eventTree->Branch("tp_eventid",     &m_tp_eventid);
+  eventTree->Branch("tp_charge",      &m_tp_charge);
   if (TrackingInJets) {
-    eventTree->Branch("tp_injet",     &m_tp_injet);
-    eventTree->Branch("tp_injet_highpt",     &m_tp_injet_highpt);
+    eventTree->Branch("tp_injet",        &m_tp_injet);
+    eventTree->Branch("tp_injet_highpt", &m_tp_injet_highpt);
   }
 
-  eventTree->Branch("matchtrk_pt",      &m_matchtrk_pt);
-  eventTree->Branch("matchtrk_eta",     &m_matchtrk_eta);
-  eventTree->Branch("matchtrk_phi",     &m_matchtrk_phi);
-  eventTree->Branch("matchtrk_z0",      &m_matchtrk_z0);
-  eventTree->Branch("matchtrk_d0",      &m_matchtrk_d0);
-  eventTree->Branch("matchtrk_chi2",    &m_matchtrk_chi2);
-  eventTree->Branch("matchtrk_nstub",   &m_matchtrk_nstub);
+  eventTree->Branch("matchtrk_pt",    &m_matchtrk_pt);
+  eventTree->Branch("matchtrk_eta",   &m_matchtrk_eta);
+  eventTree->Branch("matchtrk_phi",   &m_matchtrk_phi);
+  eventTree->Branch("matchtrk_z0",    &m_matchtrk_z0);
+  eventTree->Branch("matchtrk_d0",    &m_matchtrk_d0);
+  eventTree->Branch("matchtrk_chi2",  &m_matchtrk_chi2);
+  eventTree->Branch("matchtrk_nstub", &m_matchtrk_nstub);
   if (TrackingInJets) {
-    eventTree->Branch("matchtrk_injet",    &m_matchtrk_injet);
-    eventTree->Branch("matchtrk_injet_highpt",    &m_matchtrk_injet_highpt);
+    eventTree->Branch("matchtrk_injet",        &m_matchtrk_injet);
+    eventTree->Branch("matchtrk_injet_highpt", &m_matchtrk_injet_highpt);
   }
 
-  eventTree->Branch("loosematchtrk_pt",      &m_loosematchtrk_pt);
-  eventTree->Branch("loosematchtrk_eta",     &m_loosematchtrk_eta);
-  eventTree->Branch("loosematchtrk_phi",     &m_loosematchtrk_phi);
-  eventTree->Branch("loosematchtrk_z0",      &m_loosematchtrk_z0);
-  eventTree->Branch("loosematchtrk_d0",      &m_loosematchtrk_d0);
-  eventTree->Branch("loosematchtrk_chi2",    &m_loosematchtrk_chi2);
-  eventTree->Branch("loosematchtrk_nstub",   &m_loosematchtrk_nstub);
+  eventTree->Branch("loosematchtrk_pt",    &m_loosematchtrk_pt);
+  eventTree->Branch("loosematchtrk_eta",   &m_loosematchtrk_eta);
+  eventTree->Branch("loosematchtrk_phi",   &m_loosematchtrk_phi);
+  eventTree->Branch("loosematchtrk_z0",    &m_loosematchtrk_z0);
+  eventTree->Branch("loosematchtrk_d0",    &m_loosematchtrk_d0);
+  eventTree->Branch("loosematchtrk_chi2",  &m_loosematchtrk_chi2);
+  eventTree->Branch("loosematchtrk_nstub", &m_loosematchtrk_nstub);
   if (TrackingInJets) {
-    eventTree->Branch("loosematchtrk_injet",   &m_loosematchtrk_injet);
-    eventTree->Branch("loosematchtrk_injet_highpt",   &m_loosematchtrk_injet_highpt);
+    eventTree->Branch("loosematchtrk_injet",        &m_loosematchtrk_injet);
+    eventTree->Branch("loosematchtrk_injet_highpt", &m_loosematchtrk_injet_highpt);
   }
 
   if (SaveStubs) {
@@ -482,31 +483,31 @@ void L1TrackNtupleMaker::beginJob()
     eventTree->Branch("allstub_y", &m_allstub_y);
     eventTree->Branch("allstub_z", &m_allstub_z);
 
-    eventTree->Branch("allstub_isBarrel", &m_allstub_isBarrel);
-    eventTree->Branch("allstub_layer", &m_allstub_layer);
+    eventTree->Branch("allstub_isBarrel",   &m_allstub_isBarrel);
+    eventTree->Branch("allstub_layer",      &m_allstub_layer);
     eventTree->Branch("allstub_isPSmodule", &m_allstub_isPSmodule);
     
     eventTree->Branch("allstub_trigDisplace", &m_allstub_trigDisplace);
-    eventTree->Branch("allstub_trigOffset", &m_allstub_trigOffset);
-    eventTree->Branch("allstub_trigPos", &m_allstub_trigPos);
-    eventTree->Branch("allstub_trigBend", &m_allstub_trigBend);
+    eventTree->Branch("allstub_trigOffset",   &m_allstub_trigOffset);
+    eventTree->Branch("allstub_trigPos",      &m_allstub_trigPos);
+    eventTree->Branch("allstub_trigBend",     &m_allstub_trigBend);
     
     eventTree->Branch("allstub_matchTP_pdgid", &m_allstub_matchTP_pdgid);
-    eventTree->Branch("allstub_matchTP_pt", &m_allstub_matchTP_pt);
-    eventTree->Branch("allstub_matchTP_eta", &m_allstub_matchTP_eta);
-    
-    eventTree->Branch("allstub_matchTP_phi", &m_allstub_matchTP_phi);
+    eventTree->Branch("allstub_matchTP_pt",    &m_allstub_matchTP_pt);
+    eventTree->Branch("allstub_matchTP_eta",   &m_allstub_matchTP_eta);
+    eventTree->Branch("allstub_matchTP_phi",   &m_allstub_matchTP_phi);
     
     eventTree->Branch("allstub_genuine", &m_allstub_genuine);
   }
 
   if (TrackingInJets) {
     eventTree->Branch("jet_eta", &m_jet_eta);
-    eventTree->Branch("jet_pt", &m_jet_pt);
-    eventTree->Branch("jet_tp_sumpt", &m_jet_tp_sumpt);
-    eventTree->Branch("jet_matchtrk_sumpt", &m_jet_matchtrk_sumpt);
-    eventTree->Branch("jet_loosematchtrk_sumpt", &m_jet_loosematchtrk_sumpt);
+    eventTree->Branch("jet_phi", &m_jet_phi);
+    eventTree->Branch("jet_pt",  &m_jet_pt);
+    eventTree->Branch("jet_tp_sumpt",  &m_jet_tp_sumpt);
     eventTree->Branch("jet_trk_sumpt", &m_jet_trk_sumpt);
+    eventTree->Branch("jet_matchtrk_sumpt",      &m_jet_matchtrk_sumpt);
+    eventTree->Branch("jet_loosematchtrk_sumpt", &m_jet_loosematchtrk_sumpt);
   }
 
 
@@ -612,11 +613,12 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
   }
 
   m_jet_eta->clear();
+  m_jet_phi->clear();
   m_jet_pt->clear();
   m_jet_tp_sumpt->clear();
+  m_jet_trk_sumpt->clear();
   m_jet_matchtrk_sumpt->clear();
   m_jet_loosematchtrk_sumpt->clear();
-  m_jet_trk_sumpt->clear();
 
 
 
@@ -770,7 +772,7 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
 
 
   // ----------------------------------------------------------------------------------------------
-  // do tracking in jets?
+  // tracking in jets
   // ----------------------------------------------------------------------------------------------
 
   std::vector<math::XYZTLorentzVector> v_jets;
@@ -1123,8 +1125,8 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
       if ( hasStubInLayer[isum] == 2) nStubLayerTP_g += 1;
     }
 
-    if (DebugMode) cout << "TP is associated with " << nStubTP << " stubs, and has stubs in " << nStubLayerTP << " different layers/disks, and has GENUINE stubs in "
-<< nStubLayerTP_g << " layers " << endl;
+    if (DebugMode) cout << "TP is associated with " << nStubTP << " stubs, and has stubs in " << nStubLayerTP 
+			<< " different layers/disks, and has GENUINE stubs in " << nStubLayerTP_g << " layers " << endl;
 
 
 
@@ -1393,11 +1395,12 @@ void L1TrackNtupleMaker::analyze(const edm::Event& iEvent, const edm::EventSetup
     for (int ij=0; ij<(int)v_jets.size(); ij++) {
       if (ij<NJETS) {
 	m_jet_eta->push_back((v_jets.at(ij)).eta());
+	m_jet_phi->push_back((v_jets.at(ij)).phi());
 	m_jet_pt->push_back((v_jets.at(ij)).pt());
 	m_jet_tp_sumpt->push_back(jets_tp_sumpt[ij]);
+	m_jet_trk_sumpt->push_back(jets_trk_sumpt[ij]);
 	m_jet_matchtrk_sumpt->push_back(jets_matchtrk_sumpt[ij]);
 	m_jet_loosematchtrk_sumpt->push_back(jets_loosematchtrk_sumpt[ij]);
-	m_jet_trk_sumpt->push_back(jets_trk_sumpt[ij]);
       }
     }
   }
